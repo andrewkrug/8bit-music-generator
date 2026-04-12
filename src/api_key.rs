@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use serde::Deserialize;
 use tokio::sync::oneshot;
 
@@ -24,11 +24,7 @@ fn load_from_config() -> Option<String> {
     let content = std::fs::read_to_string(&path).ok()?;
     let config: Config = toml::from_str(&content).ok()?;
     let key = config.gemini_api_key?;
-    if key.is_empty() {
-        None
-    } else {
-        Some(key)
-    }
+    if key.is_empty() { None } else { Some(key) }
 }
 
 fn mask_key(key: &str) -> String {
@@ -157,8 +153,7 @@ document.getElementById('key').addEventListener('keydown', e => {
 
 async fn prompt_via_browser() -> Result<String> {
     use axum::{
-        Json,
-        Router,
+        Json, Router,
         response::Html,
         routing::{get, post},
     };

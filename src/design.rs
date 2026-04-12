@@ -1,19 +1,12 @@
-/// Design principles for 8-bit video game music generation.
-///
-/// Core tenets:
-/// - **Authentic chiptune aesthetic**: All music should evoke the sound of
-///   classic 8-bit consoles (NES, Game Boy, Sega Master System) using
-///   characteristic waveforms: pulse/square, triangle, noise, and simple PCM.
-/// - **Loopability**: Game music must loop seamlessly. Compositions should
-///   resolve cleanly at the end to enable perfect repetition.
-/// - **Emotional clarity**: Each piece should establish mood immediately —
-///   players must feel the tone (danger, triumph, calm, urgency) within the
-///   first few seconds.
-/// - **Melodic memorability**: Strong, hummable melodies are essential.
-///   Classic game music is remembered for decades because of simple,
-///   distinctive melodic hooks.
-/// - **Channel discipline**: Respect the constraints of vintage hardware —
-///   typically 3-4 melodic voices plus a noise channel for percussion.
+// Design principles for 8-bit video game music generation.
+//
+// Core tenets:
+// - Authentic chiptune aesthetic: classic 8-bit consoles (NES, Game Boy, SMS)
+//   using pulse/square, triangle, noise, and simple PCM waveforms.
+// - Loopability: all music loops seamlessly.
+// - Emotional clarity: mood established within the first few seconds.
+// - Melodic memorability: strong, hummable hooks.
+// - Channel discipline: 3-4 melodic voices + noise percussion.
 
 /// System prompt prefix for background music / soundtrack generation.
 pub const BGM_SYSTEM_PROMPT: &str = "\
@@ -94,6 +87,19 @@ MIXING FOR GAMES:
   activity that would mask coin and UI sounds.
 - The bass line should be steady and rhythmic, providing a foundation \
   without overpowering the melody.
+
+";
+
+/// Universal directive appended to ALL audio generation prompts.
+/// Ensures every piece of generated audio is designed to loop seamlessly.
+pub const LOOP_ALWAYS_DIRECTIVE: &str = "\
+CRITICAL LOOPING REQUIREMENT:
+- ALL generated audio MUST be designed to play on a loop.
+- The ending must flow naturally back into the beginning with no audible \
+  gap, click, or discontinuity.
+- Match the final bar's harmonic and rhythmic state to the opening bar.
+- For sound effects, ensure the tail decays to silence cleanly so repeated \
+  playback does not produce artifacts.
 
 ";
 

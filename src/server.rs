@@ -6,7 +6,7 @@ use rmcp::model::{
     CallToolResult, Content, Implementation, InitializeResult, ProtocolVersion, RawAudioContent,
     RawContent, ServerCapabilities, ServerInfo,
 };
-use rmcp::{tool, tool_handler, tool_router, ErrorData as McpError, ServerHandler};
+use rmcp::{ErrorData as McpError, ServerHandler, tool, tool_handler, tool_router};
 use serde::{Deserialize, Serialize};
 
 use crate::design;
@@ -56,16 +56,12 @@ pub struct GenerateSfxParams {
         description = "Sound effect category: 'action' (jump, attack), 'collect' (coin, item), 'ui' (menu select, confirm), 'damage' (hit, death), 'environment' (door, chest). Defaults to 'action'"
     )]
     pub category: Option<String>,
-    #[schemars(
-        description = "Optional filename to save the sound effect as (without extension)"
-    )]
+    #[schemars(description = "Optional filename to save the sound effect as (without extension)")]
     pub save_as: Option<String>,
 }
 
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
-#[schemars(
-    description = "Parameters for generating a seamlessly looping background music track"
-)]
+#[schemars(description = "Parameters for generating a seamlessly looping background music track")]
 pub struct GenerateLoopParams {
     #[schemars(
         description = "Description of the looping music (e.g. 'peaceful village theme with gentle melody')"
@@ -189,11 +185,12 @@ impl MusicGeneratorServer {
         let original_prompt = params.prompt.clone();
 
         let enhanced_prompt = format!(
-            "{}\nCompose an 8-bit chiptune track for a video game {context} scene at ~{tempo} BPM: {}. \
+            "{}{}\nCompose an 8-bit chiptune track for a video game {context} scene at ~{tempo} BPM: {}. \
              Use classic NES-style square wave, triangle wave, and noise channels. \
              The music should be immediately recognizable as retro video game music \
              with a strong, memorable melody.",
             design::BGM_SYSTEM_PROMPT,
+            design::LOOP_ALWAYS_DIRECTIVE,
             params.prompt
         );
 
@@ -209,10 +206,7 @@ impl MusicGeneratorServer {
 
         if let Some(filename) = params.save_as {
             let path = self.save_audio(&filename, &result.audio_data, ext).await?;
-            contents.push(Content::text(format!(
-                "Music saved to: {}",
-                path.display()
-            )));
+            contents.push(Content::text(format!("Music saved to: {}", path.display())));
             file_path = Some(path.display().to_string());
         }
 
@@ -253,11 +247,12 @@ impl MusicGeneratorServer {
         let original_prompt = params.prompt.clone();
 
         let enhanced_prompt = format!(
-            "{}\nCreate an 8-bit chiptune sound effect in the '{}' category: {}. \
+            "{}{}\nCreate an 8-bit chiptune sound effect in the '{}' category: {}. \
              The sound should be short, punchy, and immediately recognizable. \
              Use classic NES-era synthesis techniques: square waves, noise bursts, \
              and rapid pitch sweeps.",
             design::SFX_SYSTEM_PROMPT,
+            design::LOOP_ALWAYS_DIRECTIVE,
             category,
             params.prompt
         );
@@ -316,11 +311,12 @@ impl MusicGeneratorServer {
         let original_prompt = params.prompt.clone();
 
         let enhanced_prompt = format!(
-            "{}\nCompose a seamlessly looping 8-bit chiptune track, approximately {duration} \
+            "{}{}\nCompose a seamlessly looping 8-bit chiptune track, approximately {duration} \
              seconds long, with a {mood} mood: {}. \
              The track MUST loop perfectly — the ending must flow naturally back \
              into the beginning with no click or gap. Use NES-style synthesis.",
             design::LOOP_SYSTEM_PROMPT,
+            design::LOOP_ALWAYS_DIRECTIVE,
             params.prompt
         );
 
@@ -336,10 +332,7 @@ impl MusicGeneratorServer {
 
         if let Some(filename) = params.save_as {
             let path = self.save_audio(&filename, &result.audio_data, ext).await?;
-            contents.push(Content::text(format!(
-                "Loop saved to: {}",
-                path.display()
-            )));
+            contents.push(Content::text(format!("Loop saved to: {}", path.display())));
             file_path = Some(path.display().to_string());
         }
 
@@ -394,8 +387,9 @@ impl MusicGeneratorServer {
         };
 
         let enhanced_instruction = format!(
-            "{}\n{}",
+            "{}{}\n{}",
             design::REMIX_SYSTEM_PROMPT,
+            design::LOOP_ALWAYS_DIRECTIVE,
             params.instruction
         );
 

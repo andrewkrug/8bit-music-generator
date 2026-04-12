@@ -1,16 +1,12 @@
-mod api_key;
-mod design;
-mod lyria;
-mod server;
-
 use std::path::PathBuf;
 
 use anyhow::Result;
 use rmcp::ServiceExt;
 use rmcp::transport::stdio;
 
-use lyria::LyriaClient;
-use server::MusicGeneratorServer;
+use music_generator::api_key;
+use music_generator::lyria::LyriaClient;
+use music_generator::server::MusicGeneratorServer;
 
 #[tokio::main]
 async fn main() -> Result<()> {

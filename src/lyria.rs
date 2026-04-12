@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use base64::Engine;
 use serde::{Deserialize, Serialize};
 
@@ -212,8 +212,8 @@ impl LyriaClient {
             match part {
                 ResponsePart::InlineData { inline_data } => {
                     if audio_data.is_none() {
-                        let bytes = base64::engine::general_purpose::STANDARD
-                            .decode(&inline_data.data)?;
+                        let bytes =
+                            base64::engine::general_purpose::STANDARD.decode(&inline_data.data)?;
                         tracing::info!(
                             mime_type = %inline_data.mime_type,
                             size = bytes.len(),
