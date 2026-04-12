@@ -1,0 +1,25 @@
+[package]
+name = "music-generator"
+version = "0.1.0"
+edition = "2024"
+description = "MCP server for generating 8-bit video game music using Lyria 3"
+license = "Apache-2.0"
+
+[dependencies]
+rmcp = { version = "0.16", features = ["server", "transport-io"] }
+schemars = "1"
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", features = ["json"] }
+base64 = "0.22"
+anyhow = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+axum = "0.8"
+open = "5"
+toml = "0.8"
+dirs = "6"
+
+[dev-dependencies]
+wiremock = "0.6"
