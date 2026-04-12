@@ -3,7 +3,7 @@ use base64::Engine;
 use serde::{Deserialize, Serialize};
 
 const API_BASE: &str = "https://generativelanguage.googleapis.com/v1beta/models";
-const MODEL_ID: &str = "lyria-realtime-exp";
+const MODEL_ID: &str = "lyria-3-pro-preview";
 
 #[derive(Clone)]
 pub struct LyriaClient {

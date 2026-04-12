@@ -267,7 +267,7 @@ async fn api_sends_correct_headers_and_model() {
     let mock_server = MockServer::start().await;
 
     Mock::given(method("POST"))
-        .and(path_regex(r"/lyria-realtime-exp:generateContent"))
+        .and(path_regex(r"/lyria-3-pro-preview:generateContent"))
         .and(header("x-goog-api-key", "my-secret-key"))
         .respond_with(
             ResponseTemplate::new(200).set_body_json(lyria_success_response(&tiny_wav(), "ok")),
