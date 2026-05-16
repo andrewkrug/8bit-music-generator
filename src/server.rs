@@ -53,9 +53,20 @@ pub struct GenerateSfxParams {
     )]
     pub prompt: String,
     #[schemars(
-        description = "Sound effect category: 'action' (jump, attack), 'collect' (coin, item), 'ui' (menu select, confirm), 'damage' (hit, death), 'environment' (door, chest). Defaults to 'action'"
+        description = "Sound effect category: 'power-up' (1up, mushroom, star), 'collect' (coin, gem, item), \
+        'movement' (jump, dash, land), 'combat' (shoot, hit, explosion, sword), \
+        'death' (death, game-over), 'ui' (select, confirm, cancel, pause), \
+        'environment' (door, chest, warp), 'fanfare' (victory, level-complete). \
+        Defaults to 'action'"
     )]
     pub category: Option<String>,
+    #[schemars(
+        description = "Well-known SFX preset for precise sound design. Examples: '1up', 'coin', 'jump', \
+        'shoot', 'explosion', 'hit', 'death', 'powerup', 'star', 'select', 'confirm', 'cancel', \
+        'door', 'chest', 'warp', 'victory', 'dash', 'land', 'sword', 'item', 'pause'. \
+        When set, overrides prompt with an expert synthesis recipe for that classic sound."
+    )]
+    pub preset: Option<String>,
     #[schemars(description = "Optional filename to save the sound effect as (without extension)")]
     pub save_as: Option<String>,
 }
@@ -237,7 +248,7 @@ impl MusicGeneratorServer {
     }
 
     #[tool(
-        description = "Generate an 8-bit chiptune sound effect for a video game. Produces short, punchy retro sound effects (jumps, coins, explosions, UI sounds)."
+        description = "Generate an 8-bit chiptune sound effect for a video game. Produces short, punchy retro sound effects. Supports presets for classic sounds: '1up', 'coin', 'jump', 'shoot', 'explosion', 'hit', 'death', 'powerup', 'star', 'select', 'confirm', 'cancel', 'door', 'chest', 'warp', 'victory', 'dash', 'land', 'sword', 'item', 'pause'."
     )]
     async fn generate_sfx(
         &self,
@@ -246,16 +257,29 @@ impl MusicGeneratorServer {
         let category = params.category.unwrap_or_else(|| "action".into());
         let original_prompt = params.prompt.clone();
 
-        let enhanced_prompt = format!(
-            "{}{}\nCreate an 8-bit chiptune sound effect in the '{}' category: {}. \
-             The sound should be short, punchy, and immediately recognizable. \
-             Use classic NES-era synthesis techniques: square waves, noise bursts, \
-             and rapid pitch sweeps.",
-            design::SFX_SYSTEM_PROMPT,
-            design::LOOP_ALWAYS_DIRECTIVE,
-            category,
-            params.prompt
-        );
+        let enhanced_prompt = if let Some(recipe) =
+            params.preset.as_deref().and_then(design::sfx_preset_recipe)
+        {
+            // Preset provides an expert synthesis recipe — use it directly.
+            format!(
+                "{}{}\n{}",
+                design::SFX_SYSTEM_PROMPT,
+                design::SFX_ONE_SHOT_DIRECTIVE,
+                recipe,
+            )
+        } else {
+            format!(
+                "{}{}\nCreate an 8-bit chiptune sound effect in the '{}' category: {}. \
+                 The sound should be short, punchy, and immediately recognizable. \
+                 Use classic NES-era synthesis techniques: square waves, noise bursts, \
+                 and rapid pitch sweeps. The sound must decay to complete silence — \
+                 do NOT generate music or a looping track.",
+                design::SFX_SYSTEM_PROMPT,
+                design::SFX_ONE_SHOT_DIRECTIVE,
+                category,
+                params.prompt
+            )
+        };
 
         let result = self
             .client
